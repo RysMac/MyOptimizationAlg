@@ -1,0 +1,4 @@
+name = "MyOptimizationAlg"
+uuid = "595730de-e1dd-4f43-8708-12c2309ca628"
+authors = ["mr <maciej_rys@o2.pl>"]
+version = "0.1.0"
