@@ -3,66 +3,53 @@ using Roots
 
 function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T = 1e-4, max_iters::Int = 100, verbose::Int = 0) where T <: Float64
 
-	n = length(grad)
-	sol = zeros(T, n)
-	lambda = zero(T)
+	n 					= length(grad)
+	sol 				= zeros(T, n)
+	# regularized_hess 	= similar(hess)
+	lambda 				= zero(T)
 
 	if !LinearAlgebra.isposdef(hess)
 		eigen_sys = eigen(hess)
 		eigen_val_min = minimum(real(eigen_sys.values))
+		lambda = abs(eigen_val_min) + 0.0001
 		if verbose > 1
 			println("not positive definite: eigenvalue min = ", eigen_val_min)
 		end
-		lambda = abs(eigen_val_min) + 0.0001
 	end
 
 	for i in 1:max_iters
 
 		# Regularize Hessian if needed
 		regularized_hess = 0.5(hess' + hess) + lambda * I
-		regularized_hess_ch = LinearAlgebra.cholesky(regularized_hess).U
 
 		# Newton step
-		RTR = regularized_hess_ch' * regularized_hess_ch
-		sol_newton = RTR \ -grad
-		sol_newton_norm = norm(sol_newton)
-		#println("sol Newton = ", mod_hess_ch)
+		#RTR = regularized_hess_ch' * regularized_hess_ch
+		sol .= regularized_hess \ -grad
+		sol_norm = norm(sol)
 
-		if sol_newton_norm ≤ delta
-
-			if lambda == 0 || abs(sol_newton_norm - delta ) < tol * delta
-
-				# since it is the solution just return ??
-				sol .= sol_newton
-				sol_norm = sol_newton_norm
+		if sol_norm ≤ delta
+			if lambda == 0 || abs(sol_norm - delta ) < tol * delta
 				if verbose > 0
 					println("Newton step ")
 				end
-				break
-
+				return sol
 			else
 				eigen_vec_min = (eigen(hess, sortby=minimum).vectors)[:,1]
 				fn = x -> sqrt((sol_newton + x * eigen_vec_min)' * (sol_newton + x * eigen_vec_min)) - delta
 				root = find_zero(fn, delta/100.)
-				sol .= sol_newton + root * eigen_vec_min
-				sol_norm = norm(sol)
 				if verbose > 1
 					prinln("hard case solution")
 				end
-				# also use return ?
-				break
-
+				return sol + root * eigen_vec_min
 			end
-
 		else
-			sol .= sol_newton
-			sol_norm = sol_newton_norm
+			regularized_hess_ch = LinearAlgebra.cholesky(regularized_hess).U
 			ql_norm = norm(regularized_hess_ch' \ sol)
-			lambda = lambda + (sol_norm/ql_norm)^2 * ((sol_norm - delta)/delta);
+			lambda += (sol_norm/ql_norm)^2 * ((sol_norm - delta)/delta);
 			#println("inner error = ", sol_norm - delta )
 		end
 
-		if abs(sol_norm - delta ) < tol #* delta
+		if abs(sol_norm - delta ) < tol * delta
 			if (verbose > 0)
 				println("sub problem solution was found after i = ", i , " iterations", "  sol_nomr = ", sol_norm)
 			end

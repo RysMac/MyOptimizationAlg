@@ -1,5 +1,6 @@
 using MyOptimizationAlg
 using LinearAlgebra
+using BenchmarkTools
 
 # Positive definite matrix example
 function test_positive_definite()
@@ -7,7 +8,7 @@ function test_positive_definite()
 	hess = [4.0 1.0; 1.0 3.0]    # Positive definite matrix
 	grad = [-1.0, -1.0]          # Gradient vector
 	delta = 0.01                  # Trust region radius
-	@time sol = subproblem(hess, grad, delta, verbose = 2)
+	sol = subproblem(hess, grad, delta, verbose = 1)
 	println("Solution:", sol)
 	println("Norm of solution:", norm(sol))
 end
