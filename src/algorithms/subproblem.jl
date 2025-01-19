@@ -35,7 +35,7 @@ function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T =
 				return sol
 			else
 				eigen_vec_min = (eigen(hess, sortby=minimum).vectors)[:,1]
-				fn = x -> sqrt((sol_newton + x * eigen_vec_min)' * (sol_newton + x * eigen_vec_min)) - delta
+				fn = x -> sqrt((sol + x * eigen_vec_min)' * (sol + x * eigen_vec_min)) - delta
 				root = find_zero(fn, delta/100.)
 				if verbose > 1
 					prinln("hard case solution")

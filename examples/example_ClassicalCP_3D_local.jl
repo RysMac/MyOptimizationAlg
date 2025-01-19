@@ -2,9 +2,10 @@
 using ForwardDiff
 using LinearAlgebra
 include("../src/algorithms/cauchy_point.jl")
+include("../src/algorithms/trust_region_LA.jl")
 function count_positives_negatives(vec::Vector{T}) where T <: Real
-	positives = sum(x -> x > 0, vec)  # Count positives
-	negatives = sum(x -> x < 0, vec)  # Count negatives
+	positives = sum(x -> x > 1e-16, vec)  # Count positives
+	negatives = sum(x -> x < 1e-16, vec)  # Count negatives
 
 	println("Number of positive elements: $positives")
 	println("Number of negative elements: $negatives")
@@ -103,7 +104,7 @@ end;
 
 function ϵt(λ)
 	Id3 = [1 0 0; 0 1 0; 0 0 1]
-	F = [1. λ 0.; 0. 1. 0.; 0. 0. 1.]
+	F = [1. 0. 0.; 0. 1. 0.; 0. 0. -λ*1.]
 	ϵt = 0.5 * (F' * F - Id3)
 	return ϵt
 end;
@@ -115,7 +116,7 @@ function yield_f(γ::Vector, material::mat_data, state::history_data)
 	hab = hαβ()
 
 	λn = state.λ
-	λ = λn + 0.001
+	λ = λn + 0.005
 	ϵpn = state.ϵᵖ
 
 	ϵp = ϵpn
@@ -154,18 +155,27 @@ end
 γ = zeros(24)
 
 ftrial = yield_f(γ, material_data, history_state)
-
 println(ftrial)
-inc_energy(γ)
 
-grad = ForwardDiff.gradient(inc_energy, γ)
-println(grad)
+energy_val = inc_energy(γ)
 
-hess = ForwardDiff.hessian(inc_energy, γ)
+inc_energy_grad(γ) = ForwardDiff.gradient(inc_energy, γ)
+inc_energy_hess(γ) = ForwardDiff.hessian(inc_energy, γ)
 
-γ = cauchy_point(100.1, grad, hess)
-println(γ)
+γ = cauchy_point(100.1, inc_energy_grad(γ), inc_energy_hess(γ) )
+# println(γ)
 
 
 count_positives_negatives(ftrial)
-count_positives_negatives(cp)
+# count_positives_negatives(cp)
+
+delta = 0.1;
+penalty = 10.;
+la = similar(γ)
+lower_bounds = zeros(24)
+
+γsol = trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, γ, la, penalty, lower_bounds; verbose = 1)
+count_positives_negatives(γsol)
+
+ftrial = yield_f(γsol, material_data, history_state)
+println(ftrial)
