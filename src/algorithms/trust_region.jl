@@ -6,7 +6,7 @@ function trust_region(	fun,
 						hess,
 						delta::T,
 						x0::Vector{T};
-						verbose = 0) where T <: Real
+						verbose = 0) where T <: Float64
 
 	sol 		= copy(x0)
 	sol_inner 	= similar(x0)
@@ -32,10 +32,10 @@ function trust_region(	fun,
 			rho = numerator/denominator
 		end
 		if verbose > 1
-			println("rho = ", rho, " licznik = ", numerator, " mianownik = ", denominator)
+			println("rho = ", rho, " numerator = ", numerator, " denominator = ", denominator)
 		end
 
-		if rho > 0.4 # in HSL lib it is 0.01
+		if rho > 0.01 # in HSL lib it is 0.01
 			@inbounds sol .= sol_try
 			#println("accepted solution = ", sol)
 			func_val = fun(sol)
@@ -54,7 +54,7 @@ function trust_region(	fun,
 		#println("solution = ", sol)
 		if norm(grad_val) < 10^-14 || i == 1000
 			if verbose > 0
-				println("gradient = ",norm(grad_val), "  outer iterations = ", i)
+				println("gradient = ", norm(grad_val), "  outer iterations = ", i)
 				println("solution = ", sol, "delta = ", delta)
 			end
 			break

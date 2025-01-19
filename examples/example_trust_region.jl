@@ -28,7 +28,7 @@ function hessian_rosenbrock(x::Vector{T}) where T
 end
 
 # Initial guess
-x0 = [3.2, 2.2]  # Close to the global minimum but not at it
+x0 = [20.2, 20.2]  # Close to the global minimum but not at it
 
 # Trust region radius
 delta = .5
