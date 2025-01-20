@@ -52,7 +52,7 @@ function trust_region(	fun,
 		end
 
 		#println("solution = ", sol)
-		if norm(grad_val) < 10^-14 || i == 1000
+		if norm(grad_val) < 10^-12 || i == 1000
 			if verbose > 0
 				println("gradient = ", norm(grad_val), "  outer iterations = ", i)
 				# println("solution = ", sol, "delta = ", delta)

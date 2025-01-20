@@ -5,7 +5,7 @@ function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T =
 
 	n 					= length(grad)
 	sol 				= zeros(T, n)
-	# regularized_hess 	= similar(hess)
+	regularized_hess 	= similar(hess)
 	lambda 				= zero(T)
 
 	if !LinearAlgebra.isposdef(hess)
@@ -20,7 +20,7 @@ function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T =
 	for i in 1:max_iters
 
 		# Regularize Hessian if needed
-		regularized_hess = 0.5(hess' + hess) + lambda * I
+		regularized_hess .= 0.5(hess' + hess) + lambda * I
 
 		# Newton step
 		#RTR = regularized_hess_ch' * regularized_hess_ch
@@ -43,8 +43,7 @@ function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T =
 				return sol + root * eigen_vec_min
 			end
 		else
-			regularized_hess_ch = LinearAlgebra.cholesky(regularized_hess).U
-			ql_norm = norm(regularized_hess_ch' \ sol)
+			ql_norm = norm((LinearAlgebra.cholesky(regularized_hess).U)' \ sol)
 			lambda += (sol_norm/ql_norm)^2 * ((sol_norm - delta)/delta);
 			#println("inner error = ", sol_norm - delta )
 		end

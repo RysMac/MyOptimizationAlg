@@ -1,11 +1,12 @@
 
 using ForwardDiff
 using LinearAlgebra
+using StaticArrays
 include("../src/algorithms/cauchy_point.jl")
 include("../src/algorithms/trust_region_LA.jl")
-function count_positives_negatives(vec::Vector{T}) where T <: Real
-	positives = sum(x -> x > 1e-16, vec)  # Count positives
-	negatives = sum(x -> x < 1e-16, vec)  # Count negatives
+function count_positives_negatives(vec::AbstractVector{T}) where T <: Real
+	positives = sum(x -> x > 1e-14, vec)  # Count positives
+	negatives = sum(x -> x < 1e-14, vec)  # Count negatives
 
 	println("Number of positive elements: $positives")
 	println("Number of negative elements: $negatives")
@@ -109,20 +110,18 @@ function ϵt(λ)
 	return ϵt
 end;
 
-function yield_f(γ::Vector, material::mat_data, state::history_data)
+Dᵉ = material_data.Dᵉ
+P = Pα()
+hab = hαβ()
 
-	Dᵉ = material.Dᵉ
-	P = Pα()
-	hab = hαβ()
+function yield_f(γ::AbstractVector{Float64}, state::history_data)
 
 	λn = state.λ
-	λ = λn + 0.005
+	λ = λn + 0.0001
 	ϵpn = state.ϵᵖ
 
-	ϵp = ϵpn
-	for i in 1:24
-		ϵp += P[i] * γ[i]
-	end
+	# Replace temporary allocation with StaticArrays
+	ϵp = ϵpn + sum(P[i] * γ[i] for i in 1:24)
 
 	ϵ = ϵt(λ)
 	ϵe = ϵ - ϵp
@@ -130,52 +129,58 @@ function yield_f(γ::Vector, material::mat_data, state::history_data)
 
 	τ = [sum(σ .* P[i]) for i in 1:24]
 	τc = hab * γ
-	f = τ - τc - [0.001 for i in 1:24]
-
+	f = τ - τc .- 0.001
 	return f
 end;
 
 material_data = elastic_data()
 history_state = history_data()
 
-function inc_energy(γ)
-
-	Dᵉ = material_data.Dᵉ
-	hab = hαβ()
-	P = Pα()
+function inc_energy(γ::Vector{T}) where T <: Real
 
 	mCm = [MtoV6(P[i])' * Dᵉ * MtoV6(P[j]) for i in 1:24, j in 1:24]
-	dγ = [0 for _ in 1:24]
-	f = yield_f(dγ, material_data, history_state)
+	dγ = zeros(24)
+	f = yield_f(dγ, history_state)
 
 	return - f' * γ + 0.5 * γ' * ( ( hab + mCm ) * γ)
 end
 
 
-γ = zeros(24)
+function inc_energy_grad(γ::Vector{T}) where T <: Real
+    return ForwardDiff.gradient(inc_energy, γ)
+end
 
-ftrial = yield_f(γ, material_data, history_state)
-println(ftrial)
+function inc_energy_hess(γ::Vector{Float64})
+    return hab + mCm  #ForwardDiff.hessian(inc_energy, γ)
+end
 
-energy_val = inc_energy(γ)
 
-inc_energy_grad(γ) = ForwardDiff.gradient(inc_energy, γ)
-inc_energy_hess(γ) = ForwardDiff.hessian(inc_energy, γ)
-
-γ = cauchy_point(100.1, inc_energy_grad(γ), inc_energy_hess(γ) )
-# println(γ)
-
+dγ = zeros(24)
+ftrial = yield_f(dγ, history_state)
 
 count_positives_negatives(ftrial)
-# count_positives_negatives(cp)
 
-delta = 0.1;
-penalty = 10.;
-la = similar(γ)
+
+delta = 1.1;
+penalty = 10000.;
+la = zeros(24)
 lower_bounds = zeros(24)
 
-γsol = trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, γ, la, penalty, lower_bounds; verbose = 1)
+inc_energy(dγ)
+
+inc_energy_grad(dγ)
+
+inc_energy_hess(dγ)
+
+cauchy_point(delta, inc_energy_grad(dγ), inc_energy_hess(dγ) )
+
+count_positives_negatives(dγ)
+@time γsol = trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, dγ, penalty, lower_bounds; verbose = 1)
 count_positives_negatives(γsol)
 
-ftrial = yield_f(γsol, material_data, history_state)
+ftrial = yield_f(γsol, history_state)
 println(ftrial)
+println(inc_energy_grad(γsol))
+println(γsol)
+
+norm(ftrial .* γsol)

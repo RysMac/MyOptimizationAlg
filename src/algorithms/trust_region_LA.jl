@@ -62,33 +62,37 @@ function trust_region_LA(	fun,
 							hess,
 							delta::T,
 							x::Vector{T},
-							la::Vector{T},
 							penalty::T,
 							lower_bounds::Vector{T};
 							verbose = 0) where T <: Float64
 
 
+	fun_LA(x)	= fun(x) + la_lagrangian(x, λ, lower_bounds, penalty)
+	grad_LA(x)	= grad(x) + la_grad(x, λ, lower_bounds, penalty)
+	hess_LA(x)	= hess(x) + la_hess(x, λ, lower_bounds, penalty)
 
-
+	init_sol = zeros(24)
 	sol = copy(x)
-	λ 	= copy(la) #la_update!(la, penalty, x, lower_bounds)
+	λ 	= zeros(24)
+	la_update!(λ, penalty, x, lower_bounds)
 	w1 	= 1 / (penalty^0.1)
 	w2 	= 1 / penalty;
 
 	for i in 1:100
 
-		fun_LA(z)	= fun(z) + la_lagrangian(z, λ, lower_bounds, penalty)
-		grad_LA(z) 	= grad(z) + la_grad(z, λ, lower_bounds, penalty)
-		hess_LA(z) 	= hess(z) + la_hess(z, λ, lower_bounds, penalty)
+		sol .= trust_region(fun_LA, grad_LA, hess_LA, delta, init_sol, verbose = 0)
+		if norm(grad(sol) .* sol) < 10^-14
+			return sol
+		end
 
-		sol .= trust_region(fun_LA, grad_LA, hess_LA, delta, x, verbose = 1)
+		# println("ftrial.sol norm = ", norm(-grad(sol) .* sol))
 		# if verbose > 0
 		# 	println("trust region sol = ", sol)
 		# end
 
 		if norm(constraints_violation(sol, lower_bounds)) ≤ w1
 			# penalty = penalty
-			λ .= la_update!(λ, penalty, sol, lower_bounds)
+			la_update!(λ, penalty, sol, lower_bounds)
 			# if verbose > 0
 			# 	println("multipliers updated = ", λ)
 			# end
