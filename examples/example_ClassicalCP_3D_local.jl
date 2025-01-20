@@ -110,9 +110,12 @@ function ϵt(λ)
 	return ϵt
 end;
 
-Dᵉ = material_data.Dᵉ
-P = Pα()
-hab = hαβ()
+material_data = elastic_data();
+history_state = history_data();
+Dᵉ = material_data.Dᵉ;
+P = Pα();
+hab = hαβ();
+mCm = [MtoV6(P[i])' * Dᵉ * MtoV6(P[j]) for i in 1:24, j in 1:24];
 
 function yield_f(γ::AbstractVector{Float64}, state::history_data)
 
@@ -133,21 +136,14 @@ function yield_f(γ::AbstractVector{Float64}, state::history_data)
 	return f
 end;
 
-material_data = elastic_data()
-history_state = history_data()
+ftrial = yield_f(zeros(24), history_state)
 
-function inc_energy(γ::Vector{T}) where T <: Real
-
-	mCm = [MtoV6(P[i])' * Dᵉ * MtoV6(P[j]) for i in 1:24, j in 1:24]
-	dγ = zeros(24)
-	f = yield_f(dγ, history_state)
-
-	return - f' * γ + 0.5 * γ' * ( ( hab + mCm ) * γ)
+function inc_energy(γ::Vector{Float64})
+	return - ftrial' * γ + 0.5 * γ' * ( ( hab + mCm ) * γ)
 end
 
-
-function inc_energy_grad(γ::Vector{T}) where T <: Real
-    return ForwardDiff.gradient(inc_energy, γ)
+function inc_energy_grad(γ::Vector{Float64})
+    return - ftrial + ( ( hab + mCm ) * γ) #ForwardDiff.gradient(inc_energy, γ)
 end
 
 function inc_energy_hess(γ::Vector{Float64})
@@ -156,31 +152,29 @@ end
 
 
 dγ = zeros(24)
-ftrial = yield_f(dγ, history_state)
-
+γsol = zeros(24)
 count_positives_negatives(ftrial)
-
 
 delta = 1.1;
 penalty = 10000.;
-la = zeros(24)
 lower_bounds = zeros(24)
 
-inc_energy(dγ)
+# inc_energy(dγ)
+# inc_energy_grad(dγ)
+# inc_energy_hess(dγ)
 
-inc_energy_grad(dγ)
-
-inc_energy_hess(dγ)
-
-cauchy_point(delta, inc_energy_grad(dγ), inc_energy_hess(dγ) )
-
+dγ = cauchy_point(delta, inc_energy_grad(dγ), inc_energy_hess(dγ) )
+160*160
 count_positives_negatives(dγ)
-@time γsol = trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, dγ, penalty, lower_bounds; verbose = 1)
+@time for i in 1:10000
+	γsol .= trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, dγ, penalty, lower_bounds; verbose = 0)
+end
 count_positives_negatives(γsol)
 
 ftrial = yield_f(γsol, history_state)
 println(ftrial)
 println(inc_energy_grad(γsol))
 println(γsol)
+count_positives_negatives(γsol)
 
 norm(ftrial .* γsol)
