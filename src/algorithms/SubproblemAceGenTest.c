@@ -1,3 +1,147 @@
+/*************************************************************
+* AceGen    8.202 Linux (7 Oct 24)                           *
+*           Co. J. Korelc  2020           22 Jan 25 00:32:35 *
+**************************************************************
+User     : Limited evaluation version
+Notebook : Subproblem
+Evaluation time                 : 2 s     Mode  : Optimal
+Number of formulae              : 3       Method: Automatic
+Subroutine                      : SubproblemAceGenTest size: 93
+Total size of Mathematica  code : 93 subexpressions
+Total size of C code            : 364 bytes */
+#include "utilities.h"
+#include "sms.h"
+
+#include "stdlib.h"
+#include "stdio.h"
+#include "mathlink.h"
+double workingvector[219];
+void SubproblemAceGenTest(double v[119],double hess[6][6],double grad[6],double solution[6]);
+
+
+
+void SubproblemAceGenTestMathLink(){
+long ll;
+int i1000,i1001,i1002,i1003,i1004,i1j1,i1j2,i2j1,i3j1,i1s1,i1s2,i2s1,i3s1;
+const char *b1; double *b2;int *b3;
+double hess[6][6];
+double grad[6];
+double solution[6];
+++MathLinkCallCount[0];
+
+/* read from link */
+MLGetFunction(stdlink,&b1,&i1j1);
+MLReleaseSymbol(stdlink,b1);
+for(i1j1=0;i1j1<6;i1j1++){
+MLGetRealList(stdlink,&b2,&ll);
+for(i1j2=0;i1j2<6;i1j2++){
+  hess[i1j1][i1j2]=b2[i1j2];
+}
+MLReleaseReal64List(stdlink,b2,ll);
+};
+MLGetRealList(stdlink,&b2,&ll);
+for(i2j1=0;i2j1<6;i2j1++){
+  grad[i2j1]=b2[i2j1];
+}
+MLReleaseReal64List(stdlink,b2,ll);
+MLGetRealList(stdlink,&b2,&ll);
+for(i3j1=0;i3j1<6;i3j1++){
+  solution[i3j1]=b2[i3j1];
+}
+MLReleaseReal64List(stdlink,b2,ll);
+
+/* allocate output parameters */
+i1s1=6;
+i1s2=6;
+i2s1=6;
+i3s1=6;
+
+/* call module */
+SubproblemAceGenTest(workingvector,hess,grad,solution);
+
+/* write to link */
+MLPutFunction(stdlink,"List",3);
+PutRealArray(&b2,hess,i1s1,i1s2,MathLinkOptions[CO_SparseArray],0);
+PutRealList(grad,i2s1);
+PutRealList(solution,i3s1);
+};
+
+void MathLinkInitialize()
+{
+  MathLinkOptions[CO_NoSubroutines]=1;
+  printf("MathLink module: %s\n","SubproblemAceGenTest");
+};
+
+
+
+#include "utilities.h"
+
+
+// subproblem function
+void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta) {
+	T regularized_hess[N][N];
+	T chol[N][N];
+	T temp[N];
+	T lambda = 0.0;
+	T smallest_eigenvector[N];
+
+
+	//Initialize solution to zero
+	for (int i = 0; i < N; i++) {
+		sol[i] = 0.0;
+	}
+
+	// Check if the Hessian is positive definite
+	if (!is_positive_definite(hess)) {
+		// Estimate minimum eigenvalue (simplified for performance)
+		T eigen_min = find_smallest_eigenvalue(hess, smallest_eigenvector);
+		lambda = fabs(eigen_min) + 0.0001;
+	}
+
+	// Main loop
+	for (int iter = 0; iter < subproblem_max_iters; iter++) {
+		// Regularize the Hessian: regularized_hess = 0.5 * (hess + hess^T) + lambda * I
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				regularized_hess[i][j] = 0.5 * (hess[i][j] + hess[j][i]);
+			}
+			regularized_hess[i][i] += lambda;
+		}
+
+		// Perform Cholesky decomposition: chol * chol^T = regularized_hess
+		cholesky_decomposition(regularized_hess, chol);
+
+		// Solve the Newton step: sol = regularized_hess \ -grad
+		for (int i = 0; i < N; i++) {
+			temp[i] = -grad[i];
+		}
+
+		// Forward substitution: solve chol * y = -grad
+		T y[N];
+		forward_substitution(chol, temp, y);
+
+		// Backward substitution: solve chol^T * x = y
+		backward_substitution(chol, y, sol);
+
+		// Check norm of the solution
+		T sol_norm = vector_norm(sol);
+		if (sol_norm <= *delta) {
+			if (lambda == 0 || fabs(sol_norm - *delta) < subproblem_tol * *delta) {
+				return;
+			} else {
+				lambda = find_root(sol, smallest_eigenvector, *delta, 0.0);
+				// Hard case handling can be added here if needed
+				return;
+			}
+		} else {
+			// Update lambda
+			T ql_norm = vector_norm(temp);  // Use forward_substitution result as an approximation
+			lambda += pow(sol_norm / ql_norm, 2) * ((sol_norm - *delta) / *delta);
+		}
+	}
+}
+
+
 #include "utilities.h"
 
 // Matrix operations
@@ -164,13 +308,13 @@ double	inverse_power_method(const T A[N][N], T eigenvector[N], int max_iters, T 
 
 	// Step 2: Iterative process
 	for (int iter = 0; iter < max_iters; iter++) {
-		// Solve (A - σI)x = v (σ = 0, so just solve Ax = v)
+		// Solve (A - I"\203I)x = v (I"\203 = 0, so just solve Ax = v)
 		solve_linear_system(A, v, Av);
 
 		// Normalize the result to get the next eigenvector approximation
 		normalize(Av);
 
-		// Approximate the eigenvalue λ = (v^T A v) / (v^T v)
+		// Approximate the eigenvalue I^>> = (v^T A v) / (v^T v)
 		lambda = 0.0;
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
@@ -284,7 +428,7 @@ double	power_iteration(const T a[N][N], T eigenvector[N]) {
 			v[i] = w[i] / wnorm;  // Normalize w to become the next v
 		}
 
-		// Calculate the Rayleigh quotient: λ = (v^T A v) / (v^T v)
+		// Calculate the Rayleigh quotient: I^>> = (v^T A v) / (v^T v)
 		mat_vec_mult(a, v, w);
 		lambda_old = lambda;
 		lambda = v_dot_w(v, w) / v_dot_v(v);
@@ -309,7 +453,7 @@ double	find_smallest_eigenvalue(const T A[N][N], T smallest_eigenvector[N]) {
 	// Step 1: Find the largest eigenvalue and eigenvector
 	double largest_eigenvalue = power_iteration(A, largest_eigenvector);
 
-	// Step 2: Create the shifted matrix A' = A - λ_max * I
+	// Step 2: Create the shifted matrix A' = A - I^>>_max * I
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			shifted_A[i][j] = A[i][j];
@@ -372,3 +516,19 @@ double find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess) 
 	}
 	return x;
 }
+
+
+/******************* S U B R O U T I N E *********************/
+void SubproblemAceGenTest(double v[119],double hess[6][6]
+     ,double grad[6],double solution[6])
+{
+int i01;double v02;double sol[6];
+v02=1e0;
+subproblem(hess,grad,sol,&v02);
+solution[0]=sol[0];
+solution[1]=sol[1];
+solution[2]=sol[2];
+solution[3]=sol[3];
+solution[4]=sol[4];
+solution[5]=sol[5];
+};

@@ -19,9 +19,11 @@ int main() {
 	T delta = 10.0;
 	T tol = 1e-4;
 	int max_iters = 100;
-	int verbose = 1;
+	int verbose = 0;
 
-	subproblem(hess, grad, sol, delta, tol, max_iters, verbose);
+	for (int j = 0; j < 100000; j++) {
+		subproblem(hess, grad, sol, delta, tol, max_iters, verbose);
+	}
 
 	printf("Solution:\n");
 	for (int i = 0; i < N; i++) {

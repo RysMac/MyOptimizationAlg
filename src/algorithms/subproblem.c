@@ -1,36 +1,30 @@
 
 #include "utilities.h"
 
+
 // subproblem function
-void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T delta, T tol, int max_iters, int verbose) {
+void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta) {
 	T regularized_hess[N][N];
 	T chol[N][N];
 	T temp[N];
 	T lambda = 0.0;
 	T smallest_eigenvector[N];
 
-	// Initialize solution to zero
+
+	//Initialize solution to zero
 	for (int i = 0; i < N; i++) {
 		sol[i] = 0.0;
 	}
 
 	// Check if the Hessian is positive definite
 	if (!is_positive_definite(hess)) {
-		if (verbose > 1) {
-			printf("Hessian is not positive definite.\n");
-		}
-
 		// Estimate minimum eigenvalue (simplified for performance)
 		T eigen_min = find_smallest_eigenvalue(hess, smallest_eigenvector);
 		lambda = fabs(eigen_min) + 0.0001;
-
-		if (verbose > 1) {
-			printf("Regularizing with lambda = %.6f\n", lambda);
-		}
 	}
 
 	// Main loop
-	for (int iter = 0; iter < max_iters; iter++) {
+	for (int iter = 0; iter < subproblem_max_iters; iter++) {
 		// Regularize the Hessian: regularized_hess = 0.5 * (hess + hess^T) + lambda * I
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
@@ -56,28 +50,18 @@ void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T delta, T tol, i
 
 		// Check norm of the solution
 		T sol_norm = vector_norm(sol);
-		if (sol_norm <= delta) {
-			if (lambda == 0 || fabs(sol_norm - delta) < tol * delta) {
-				if (verbose > 0) {
-					printf("Newton step converged in iteration %d.\n", iter + 1);
-				}
+		if (sol_norm <= *delta) {
+			if (lambda == 0 || fabs(sol_norm - *delta) < subproblem_tol * *delta) {
 				return;
 			} else {
-				printf("Hard case solution (not fully implemented).\n");
-				if (verbose > 1) {
-					printf("Hard case solution (not fully implemented).\n");
-				}
+				lambda = find_root(sol, smallest_eigenvector, *delta, 0.0);
 				// Hard case handling can be added here if needed
 				return;
 			}
 		} else {
 			// Update lambda
 			T ql_norm = vector_norm(temp);  // Use forward_substitution result as an approximation
-			lambda += pow(sol_norm / ql_norm, 2) * ((sol_norm - delta) / delta);
+			lambda += pow(sol_norm / ql_norm, 2) * ((sol_norm - *delta) / *delta);
 		}
-	}
-
-	if (verbose > 0) {
-		printf("Maximum iterations reached without convergence.\n");
 	}
 }

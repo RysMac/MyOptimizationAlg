@@ -5,9 +5,16 @@
 #include <math.h>
 
 #define T double
-#define N 5 // You can adjust this value as needed
+#define N 6 // You can adjust this value as needed
 #define MAX_ITERS 1000
+#define ROOT_MAX_ITERS 1000
+#define subproblem_max_iters 100
+
 #define TOL 1e-6
+#define ROOT_TOL 1e-6
+#define subproblem_tol 1e-4
+
+
 
 // Helper functions
 void	matrix_add_identity(T matrix[N][N], T lambda);
@@ -26,7 +33,8 @@ T	inverse_power_method(const T A[N][N], T eigenvector[N], int max_iters, T tol);
 T	inverse_power_method_shift(const T A[N][N], T eigenvector[N], int max_iters, T tol, T sigma);
 T	power_iteration(const T a[N][N], T eigenvector[N]);
 T	find_smallest_eigenvalue(const T A[N][N], T smallest_eigenvector[N]);
+T	find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess);
 
-void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T delta, T tol, int max_iters, int verbose);
+void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta);
 
 #endif
