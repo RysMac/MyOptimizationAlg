@@ -166,7 +166,7 @@ lower_bounds = zeros(24)
 dγ = cauchy_point(delta, inc_energy_grad(dγ), inc_energy_hess(dγ) )
 160*160
 count_positives_negatives(dγ)
-@time for i in 1:10000
+@time for i in 1:100
 	γsol .= trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, dγ, penalty, lower_bounds; verbose = 0)
 end
 count_positives_negatives(γsol)
