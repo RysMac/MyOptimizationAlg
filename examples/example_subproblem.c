@@ -1,3 +1,5 @@
+// gcc -Wall -Wextra -Werror -I../src/algorithms example_subproblem.c ../src/algorithms/utilities.c ../src/algorithms/subproblem.c -o example_program -lm
+
 #include "utilities.h"
 
 // Example usage of subproblem subroutine

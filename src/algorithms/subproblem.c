@@ -7,6 +7,7 @@ void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T delta, T tol, i
 	T chol[N][N];
 	T temp[N];
 	T lambda = 0.0;
+	T smallest_eigenvector[N];
 
 	// Initialize solution to zero
 	for (int i = 0; i < N; i++) {
@@ -20,7 +21,7 @@ void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T delta, T tol, i
 		}
 
 		// Estimate minimum eigenvalue (simplified for performance)
-		T eigen_min = 0.0;  // Replace this with actual eigenvalue computation if needed
+		T eigen_min = find_smallest_eigenvalue(hess, smallest_eigenvector);
 		lambda = fabs(eigen_min) + 0.0001;
 
 		if (verbose > 1) {
@@ -62,6 +63,7 @@ void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T delta, T tol, i
 				}
 				return;
 			} else {
+				printf("Hard case solution (not fully implemented).\n");
 				if (verbose > 1) {
 					printf("Hard case solution (not fully implemented).\n");
 				}
