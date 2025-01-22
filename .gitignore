@@ -1,7 +1,12 @@
-# allow all but
-! *.jl
-! *.c
-! *.h
-! *.nb
-! *.toml
-! .gitignore
+# Ignore everything
+*
+
+# Allow specific file types
+!*.jl
+!*.c
+!*.h
+!*.nb
+!*.toml
+
+# Do not ignore this file itself
+!.gitignore
