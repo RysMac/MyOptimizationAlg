@@ -1,3 +1,7 @@
-literature
-Manifest.toml
-Project.toml
+# allow all but
+! *.jl
+! *.c
+! *.h
+! *.nb
+! *.toml
+! .gitignore
