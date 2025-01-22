@@ -28,12 +28,12 @@ function hessian_rosenbrock(x::Vector{T}) where T
 end
 
 # Initial guess
-x0 = [20.2, 20.2]  # Close to the global minimum but not at it
+x0 = [1.2, 1.2]  # Close to the global minimum but not at it
 
 # Trust region radius
-delta = .5
+delta = .01
 
-x0 = cauchy_point(delta, gradient_rosenbrock(x0), hessian_rosenbrock(x0))
+# x0 = cauchy_point(delta, gradient_rosenbrock(x0), hessian_rosenbrock(x0))
 
 gradient_rosenbrock(x0)
 

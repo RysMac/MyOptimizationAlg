@@ -22,7 +22,7 @@ int main() {
 	int verbose = 0;
 
 	for (int j = 0; j < 100000; j++) {
-		subproblem(hess, grad, sol, delta, tol, max_iters, verbose);
+		subproblem(hess, grad, sol, &delta);
 	}
 
 	printf("Solution:\n");
@@ -33,3 +33,6 @@ int main() {
 
 	return 0;
 }
+
+
+

@@ -60,7 +60,8 @@ void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta) {
 			}
 		} else {
 			// Update lambda
-			T ql_norm = vector_norm(temp);  // Use forward_substitution result as an approximation
+			forward_substitution(chol, sol, y);
+			T ql_norm = vector_norm(y);  // Use forward_substitution result as an approximation
 			lambda += pow(sol_norm / ql_norm, 2) * ((sol_norm - *delta) / *delta);
 		}
 	}

@@ -5,7 +5,7 @@
 #include <math.h>
 
 #define T double
-#define N 6 // You can adjust this value as needed
+#define N 2 // You can adjust this value as needed
 #define MAX_ITERS 1000
 #define ROOT_MAX_ITERS 1000
 #define subproblem_max_iters 100
@@ -36,5 +36,6 @@ T	find_smallest_eigenvalue(const T A[N][N], T smallest_eigenvector[N]);
 T	find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess);
 
 void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta);
+void	SubproblemAceGenTest(T v[197],T solution[2]);
 
 #endif

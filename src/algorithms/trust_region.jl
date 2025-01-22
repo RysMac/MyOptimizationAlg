@@ -50,7 +50,7 @@ function trust_region(	fun,
 		if rho > 0.8 && abs(delta - norm(sol_inner)) ≤ 10^-8 && delta < 1.
 			delta *= 2.0
 		end
-
+		println("delata = ", delta)
 		#println("solution = ", sol)
 		if norm(grad_val) < 10^-12 || i == 1000
 			if verbose > 0

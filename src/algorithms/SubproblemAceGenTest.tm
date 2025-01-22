@@ -22,8 +22,8 @@
 
 :Begin:
 :Function: SubproblemAceGenTestMathLink
-:Pattern: SubproblemAceGenTest[hess_?(ArrayQ[#,2,(Head[#]==Real || Head[#]==Integer&)] && Dimensions[#]==={6, 6} &),grad_?(ArrayQ[#,1,(Head[#]==Real || Head[#]==Integer&)] && Dimensions[#]==={6} &),solution_?(ArrayQ[#,1,(Head[#]==Real || Head[#]==Integer&)] && Dimensions[#]==={6} &)]
-:Arguments: {hess,grad,solution}
+:Pattern: SubproblemAceGenTest[solution_?(ArrayQ[#,1,(Head[#]==Real || Head[#]==Integer&)] && Dimensions[#]==={2} &)]
+:Arguments: {solution}
 :ArgumentTypes: {Manual}
 :ReturnType:   Manual
 :End:

@@ -78,7 +78,7 @@ function trust_region_LA(	fun,
 	w1 	= 1 / (penalty^0.1)
 	w2 	= 1 / penalty;
 
-	for i in 1:100
+	for i in 1:1000
 
 		sol .= trust_region(fun_LA, grad_LA, hess_LA, delta, init_sol, verbose = 0)
 		if norm(grad(sol) .* sol) < 10^-14

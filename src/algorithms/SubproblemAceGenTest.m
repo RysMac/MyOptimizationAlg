@@ -1,16 +1,13 @@
-/*************************************************************
+(*************************************************************
 * AceGen    8.202 Linux (7 Oct 24)                           *
-*           Co. J. Korelc  2020           22 Jan 25 23:58:33 *
+*           Co. J. Korelc  2020           22 Jan 25 19:28:46 *
 **************************************************************
 User     : Limited evaluation version
 Notebook : Subproblem
-Evaluation time                 : 2 s     Mode  : Optimal
-Number of formulae              : 47      Method: Automatic
-Subroutine                      : SubproblemAceGenTest size: 394
-Total size of Mathematica  code : 394 subexpressions
-Total size of C code            : 1806 bytes */
-#include "utilities.h"
-#include "sms.h"
+Evaluation time                 : 2 s     Mode  : Debug
+Number of formulae              : 48      Method: Automatic
+Module                          : SubproblemAceGenTest size: 549
+Total size of Mathematica  code : 549 subexpressions       *)
 
 
 #include "utilities.h"
@@ -74,8 +71,7 @@ void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta) {
 			}
 		} else {
 			// Update lambda
-			forward_substitution(chol, sol, y);
-			T ql_norm = vector_norm(y);  // Use forward_substitution result as an approximation
+			T ql_norm = vector_norm(temp);  // Use forward_substitution result as an approximation
 			lambda += pow(sol_norm / ql_norm, 2) * ((sol_norm - *delta) / *delta);
 		}
 	}
@@ -457,81 +453,124 @@ double find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess) 
 	return x;
 }
 
-
-/******************* S U B R O U T I N E *********************/
-void SubproblemAceGenTest(double v[199],double solution[2])
-{
-int i01;double v04;double sol[2];double v02[2][2];double v03[2];
-int i16,b29,b32,b37,b39,b41;
-v[1]=solution[0];
-v[11]=1e0-v[1];
-v[7]=(v[1]*v[1]);
-v[2]=solution[1];
-v[9]=v[2]-v[7];
-v[3]=0.2e1-400e0*v[2]+1200e0*v[7];
-v[4]=-400e0*v[1];
-v[5]=v[4];
-v[6]=200e0;
-v[8]=-2e0*v[11]+v[4]*v[9];
-v[10]=200e0*v[9];
-v[12]=(v[11]*v[11])+100e0*(v[9]*v[9]);
-v[13]=v[1];
-v[14]=v[2];
-v[15]=0.1e-1;
-for(i16=1;i16<=10000;i16++){
- v02[0][0]=v[3];
- v02[0][1]=v[4];
- v02[1][0]=v[5];
- v02[1][1]=v[6];
- v03[0]=v[8];
- v03[1]=v[10];
- v04=v[15];
- subproblem(v02,v03,sol,&v04);
- v[21]=sol[0];
- v[45]=0.5e0*v[21];
- v[22]=sol[1];
- v[23]=v[13]+v[21];
- v[35]=(v[23]*v[23]);
- v[33]=1e0-v[23];
- v[24]=v[14]+v[22];
- v[34]=v[24]-v[35];
- v[25]=(v[33]*v[33])+100e0*(v[34]*v[34]);
- v[26]=-v[12]+v[25];
- v[27]=0.5e0*(v[21]*v[21])*v[3]+v[22]*(v[10]+v[4]*v[45]+v[45]*v[5]+0.5e0*v[22]*v[6])+v[21]*v[8];
- if(fabs(v[26])<0.1e-15 && fabs(v[26]-v[27])<0.1e-15){
-  v[30]=1e0;
- } else {
-  v[30]=v[26]/v[27];
- };
- if(v[30]>0.2e0){
-  v[46]=200e0*v[34];
-  v[13]=v[23];
-  v[14]=v[24];
-  v[12]=v[25];
-  v[8]=-2e0*(v[33]+v[13]*v[46]);
-  v[10]=v[46];
-  v[3]=0.2e1-400e0*v[14]+1200e0*v[35];
-  v[4]=-400e0*v[13];
-  v[5]=v[4];
-  v[6]=200e0;
- } else {
- };
- if(v[30]<0.25e0){
-  v[15]=v[15]/4e0;
- } else {
- };
- if(v[30]>0.8e0 && fabs(v[15]-sqrt(Power(fabs(v[13]),2)+Power(fabs(v[14]),2)))>=(v[15]/100000000e0
-  ) && v[15]<10e0){
-  v[15]=2e0*v[15];
- } else {
- };
- if(sqrt(Power(fabs(v[10]),2)+Power(fabs(v[8]),2))<0.1e-11){
-  printf("\n%s %g %s %d ","Gradient = ",(double)(sqrt(Power(fabs(v[10]),2)+Power(fabs(v[8]),2)))
-   ,"  Outer iterations = ", (int) i16);
-  break;
- } else {
- };
-};/* end for */
-solution[0]=v[13];
-solution[1]=v[14];
-};
+(*********************** M O D U L E **************************)
+SetAttributes[SubproblemAceGenTest,HoldAll];
+SubproblemAceGenTest[solution$$_]:=
+Module[{i01,v04$$
+     ,sol$$=Table[Null,{2}],v02$$=Table[Null,{2},{2}]
+     ,v03$$=Table[Null,{2}]},
+SMSExecuteBreakPoint["1","SubproblemAceGenTest",1,1];
+$VV[1]=0;(*debug*)
+(*2= hessVal_1|1 *)
+$VV[2]=0.101400000000000022737367544323205947875976562500000000000000*10^4;
+(*3= hessVal_1|2 *)
+$VV[3]=-0.440000000000000056843418860808014869689941406250000000000000*10^3;
+(*4= hessVal_2|1 *)
+$VV[4]=-0.440000000000000056843418860808014869689941406250000000000000*10^3;
+(*5= hessVal_2|2 *)
+$VV[5]=0.200000000000000000000000000000000000000000000000000000000000*10^3;
+(*6= gradVal_1 *)
+$VV[6]=0.486000000000000511590769747272133827209472656250000000000000*10^2;
+(*7= gradVal_2 *)
+$VV[7]=-0.220000000000000213162820728030055761337280273437500000000000*10^2;
+(*8= funcVal *)
+$VV[8]=0.122000000000000219380069665930932387709617614746093750000000*10^1;
+(*9= sol_1 *)
+$VV[9]=0.110000000000000008881784197001252323389053344726562500000000*10^1;
+(*10= sol_2 *)
+$VV[10]=0.110000000000000008881784197001252323389053344726562500000000*10^1;
+SMSExecuteBreakPoint["2","SubproblemAceGenTest",1,2];
+$VV[11]=0;(*debug*)
+Do[
+ v02$$[[1,1]]=$VV[2];
+ v02$$[[1,2]]=$VV[3];
+ v02$$[[2,1]]=$VV[4];
+ v02$$[[2,2]]=$VV[5];
+ $VV[13]=0;(*debug*)
+ v03$$[[1]]=$VV[6];
+ v03$$[[2]]=$VV[7];
+ $VV[14]=0;(*debug*)
+ v04$$=0.100000000000000000000000000000000000000000000000000000000000*10^1;
+ $VV[15]=0;(*debug*)
+ subproblem[v02$$,v03$$,sol$$,v04$$];
+ $VV[16]=0;(*debug*)
+ (*17= solInner_1 *)
+ $VV[17]=sol$$[[1]];
+ (*18= solInner_2 *)
+ $VV[18]=sol$$[[2]];
+ (*19= solTry_1 *)
+ $VV[19]=$VV[9]+$VV[17];
+ (*20= solTry_2 *)
+ $VV[20]=$VV[10]+$VV[18];
+ SMSExecuteBreakPoint["3","SubproblemAceGenTest",1,3];
+ $VV[21]=0;(*debug*)
+ $VV[22]=Abs[-$VV[8]+(1-$VV[19])^2+100*(-$VV[19]^2+$VV[20])^2] < 1/10000000000000000 && Abs[
+  -$VV[8]-$VV[6]*$VV[17]-$VV[7]*$VV[18]+-0.5*10^0*($VV[17]*($VV[2]*$VV[17]+$VV[4]*$VV[18])
+  +$VV[18]*($VV[3]*$VV[17]+$VV[5]*$VV[18]))+(1-$VV[19])^2+100*(-$VV[19]^2+$VV[20])^2] < 1
+  /10000000000000000;
+ $VV[23]=$VV[22];
+ If[$VV[23],
+  (*24= rho *)
+  $VV[24]=1;
+  SMSExecuteBreakPoint["4","SubproblemAceGenTest",1,4];
+  $VV[25]=0;(*debug*)
+ , (* else *)
+  (*24= rho *)
+  $VV[24]=(-$VV[8]+(1-$VV[19])^2+100*(-$VV[19]^2+$VV[20])^2)/($VV[6]*$VV[17]+$VV[7]*$VV[18]
+   +0.500000000000000000000000000000000000000000000000000000000000*10^0*($VV[17]*($VV[2]*$VV[17]
+   +$VV[4]*$VV[18])+$VV[18]*($VV[3]*$VV[17]+$VV[5]*$VV[18])));
+  SMSExecuteBreakPoint["5","SubproblemAceGenTest",1,5];
+  $VV[26]=0;(*debug*)
+ ]; (* endif *)
+ SMSExecuteBreakPoint["6","SubproblemAceGenTest",1,6];
+ $VV[27]=0;(*debug*)
+ $VV[28]=$VV[24] > 0.1*10^-1;
+ $VV[29]=$VV[28];
+ If[$VV[29],
+  (*9= sol_1 *)
+  $VV[9]=$VV[19];
+  $VV[32]=$VV[9]^2;
+  $VV[30]=1-$VV[9];
+  (*10= sol_2 *)
+  $VV[10]=$VV[20];
+  $VV[31]=$VV[10]-$VV[32];
+  (*8= funcVal *)
+  $VV[8]=$VV[30]^2+100*$VV[31]^2;
+  (*6= gradVal_1 *)
+  $VV[6]=-2*$VV[30]-400*$VV[9]*$VV[31];
+  (*7= gradVal_2 *)
+  $VV[7]=200*$VV[31];
+  (*2= hessVal_1|1 *)
+  $VV[2]=0.200000000000000000000000000000000000000000000000000000000000*10^1-400*$VV[10]
+   +1200*$VV[32];
+  (*3= hessVal_1|2 *)
+  $VV[3]=-400*$VV[9];
+  (*4= hessVal_2|1 *)
+  $VV[4]=$VV[3];
+  (*5= hessVal_2|2 *)
+  $VV[5]=0.200000000000000000000000000000000000000000000000000000000000*10^3;
+  SMSExecuteBreakPoint["7","SubproblemAceGenTest",1,7];
+  $VV[33]=0;(*debug*)
+ ]; (* endif *)
+ SMSExecuteBreakPoint["8","SubproblemAceGenTest",1,8];
+ $VV[34]=0;(*debug*)
+ $VV[35]=Sqrt[Abs[$VV[6]]^2+Abs[$VV[7]]^2] < 1/1000000000000;
+ $VV[36]=$VV[35];
+ If[$VV[36],
+  Print["Gradient = "," ",Sqrt[Abs[$VV[6]]^2+Abs[$VV[7]]^2]," ","  Outer iterations = "," "
+   ,2];
+  $VV[37]=0;(*debug*)
+  Break[];
+  $VV[38]=0;(*debug*)
+  SMSExecuteBreakPoint["9","SubproblemAceGenTest",1,9];
+  $VV[39]=0;(*debug*)
+ ]; (* endif *)
+ SMSExecuteBreakPoint["10","SubproblemAceGenTest",1,10];
+ $VV[40]=0;(*debug*)
+,{$VV[12],1,100,1}]; (*EndDo*)
+solution$$[[1]]=$VV[9];
+solution$$[[2]]=$VV[10];
+$VV[41]=0;(*debug*)
+SMSExecuteBreakPoint["11","SubproblemAceGenTest",1,11];
+$VV[42]=0;(*debug*)
+];
