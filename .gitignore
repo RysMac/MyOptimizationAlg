@@ -1,12 +1,15 @@
 # Ignore everything
 *
 
-# Allow specific file types
+# Allow specific file types in all subdirectories
 !*.jl
 !*.c
 !*.h
 !*.nb
 !*.toml
+
+# Allow directories to be tracked
+!*/
 
 # Do not ignore this file itself
 !.gitignore
