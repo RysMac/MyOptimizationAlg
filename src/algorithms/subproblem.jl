@@ -1,7 +1,7 @@
 using LinearAlgebra
 using Roots
 
-function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T = 1e-4, max_iters::Int = 100, verbose::Int = 2) where T <: Float64
+function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T = 1e-4, max_iters::Int = 100, verbose::Int = 0) where T <: Float64
 
 	n 					= length(grad)
 	sol 				= zeros(T, n)
@@ -25,14 +25,10 @@ function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T =
 		# Newton step
 		#RTR = regularized_hess_ch' * regularized_hess_ch
 		sol .= regularized_hess \ -grad
-		println("newton step = ", sol);
-		println("Lambda = ", lambda)
 		sol_norm = norm(sol)
-		println("sol_norm = ", sol_norm)
 
 		if sol_norm ≤ delta
 			if lambda == 0 || abs(sol_norm - delta ) < tol * delta
-				println("Newton step finished")
 				if verbose > 0
 					println("Newton step ")
 				end

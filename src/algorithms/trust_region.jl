@@ -14,7 +14,7 @@ function trust_region(	fun,
 	hess_val	= hess(x0)
 	grad_val	= grad(x0)
 	func_val	= fun(x0)
-
+	println("  delta = ", delta)
 	for i in 1:1000
 		if verbose > 1
 			println("iteration = ", i , "  delta = ", delta)
@@ -47,7 +47,7 @@ function trust_region(	fun,
 			delta = delta/4.
 		end
 
-		if rho > 0.8 && abs(delta - norm(sol_inner)) ≤ 10^-8 && delta < 1.
+		if rho > 0.8 && abs(delta - norm(sol_inner)) ≤ 10^-8 && delta < 10.
 			delta *= 2.0
 		end
 		println("delata = ", delta)
@@ -60,5 +60,5 @@ function trust_region(	fun,
 			break
 		end
 	end
-	return sol
+	return sol, delta
 end

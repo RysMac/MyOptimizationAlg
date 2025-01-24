@@ -36,6 +36,6 @@ T	find_smallest_eigenvalue(const T A[N][N], T smallest_eigenvector[N]);
 T	find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess);
 
 void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta);
-void	SubproblemAceGenTest(T v[197],T solution[2]);
+void	SubproblemAceGenTest(T v[359],T solution[2], T lb[2]);
 
 #endif

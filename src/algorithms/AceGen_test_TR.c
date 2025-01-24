@@ -14,11 +14,15 @@ void printVector(const double *vector, int size) {
 
 int	main()
 {
-	double	initial[] = {-3, -4};
-	double v[197];
+	double	initial[2];
+	double	lb[] = {5., 2.};
+	double v[359];
 
-	SubproblemAceGenTest(v, initial);
-	printf("\n");
-	printVector(initial, 2);
-
+	for (int i = 0; i < 1; i++) {
+		initial[0] = (double) 20.0;
+		initial[1] = (double) 20.0;
+		SubproblemAceGenTest(v, initial, lb);
+		printf("\n");
+		printVector(initial, 2);
+	}
 }
