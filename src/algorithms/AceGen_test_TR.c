@@ -20,7 +20,7 @@ int	main()
 
 	for (int i = 0; i < 1; i++) {
 		initial[0] = (double) 20.0;
-		initial[1] = (double) 20.0;
+		initial[1] = (double) 2.0;
 		SubproblemAceGenTest(v, initial, lb);
 		printf("\n");
 		printVector(initial, 2);

@@ -6,6 +6,7 @@
 
 #define T double
 #define N 2 // You can adjust this value as needed
+#define SMALL 0.01 // SMALL in singular value
 #define MAX_ITERS 1000
 #define ROOT_MAX_ITERS 1000
 #define subproblem_max_iters 100
@@ -34,6 +35,7 @@ T	inverse_power_method_shift(const T A[N][N], T eigenvector[N], int max_iters, T
 T	power_iteration(const T a[N][N], T eigenvector[N]);
 T	find_smallest_eigenvalue(const T A[N][N], T smallest_eigenvector[N]);
 T	find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess);
+T	estsv(double **R, double *z, int n);
 
 void	subproblem(const T hess[N][N], const T grad[N], T sol[N], T *delta);
 void	SubproblemAceGenTest(T v[359],T solution[2], T lb[2]);

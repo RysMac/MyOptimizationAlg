@@ -20,11 +20,9 @@ end
 
 
 
-dγ = [5., 2.] .* 4
-γsol = [5., 2.] .* 4
-# count_positives_negatives(ftrial)
+dγ = [5., 3.] .* 4
 
-delta = 5.;
+delta = 1.;
 penalty = 100.;
 lower_bounds = [5., 2.]
 
@@ -35,7 +33,7 @@ lower_bounds = [5., 2.]
 dγ += cauchy_point(delta, inc_energy_grad(dγ), inc_energy_hess(dγ) )
 
 @time for i in 1:1
-	γsol .= trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, dγ, penalty, lower_bounds; verbose = 1)
+	γsol = trust_region_LA(inc_energy, inc_energy_grad, inc_energy_hess, delta, dγ, penalty, lower_bounds; verbose = 1)
 end
 
 

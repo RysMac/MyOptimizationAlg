@@ -13,3 +13,5 @@
 
 # Do not ignore this file itself
 !.gitignore
+
+subproblem_gqtpar.jl

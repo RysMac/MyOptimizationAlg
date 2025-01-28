@@ -8,7 +8,7 @@ function la_lagrangian(x::AbstractVector{T}, λ::AbstractVector{T}, LowerBounds:
 	@inbounds for i in eachindex(x)
 		diff = x[i] - LowerBounds[i]
 		term = λ[i] + penalty * diff
-		if diff < 0
+		if term < 0
 			total += λ[i] * diff + 0.5 * penalty * diff^2
 		else
 			total += -1/penalty * (λ[i])^2
@@ -23,7 +23,7 @@ function la_grad(x::AbstractVector{T}, λ::AbstractVector{T}, LowerBounds::Abstr
 	@inbounds for i in eachindex(x)
 		diff = x[i] - LowerBounds[i]
 		term = λ[i] + penalty * diff
-		grad[i] = diff < 0 ? term : 0
+		grad[i] = term < 0 ? term : 0
 	end
 	return grad
 end
@@ -33,7 +33,7 @@ function la_hess(x::AbstractVector{T}, λ::AbstractVector{T}, LowerBounds::Abstr
 	@inbounds for i in eachindex(x)
 		diff = x[i] - LowerBounds[i]
 		term = λ[i] + penalty * diff
-		hess[i] = diff < 0 ? penalty : 0
+		hess[i] = term < 0 ? penalty : 0
 	end
 	return Diagonal(hess)  # Return as a Diagonal matrix
 end
@@ -42,9 +42,8 @@ end
 function la_update!(x::AbstractVector{T}, λ::AbstractVector{T}, LowerBounds::AbstractVector{T}, penalty::T) where T <: Float64
 	for i in eachindex(x)
 		diff = x[i] - LowerBounds[i]
-		println("diff = ", diff)
 		term = λ[i] + penalty * diff
-		if diff < 0
+		if term < 0
 			λ[i] += penalty * diff + penalty/2 * diff^2
 		else
 			λ[i] = 0
@@ -62,6 +61,10 @@ function constraints_violation(x::AbstractVector{T}, LowerBounds::AbstractVector
 	return result
 end
 
+function proj!(x::AbstractVector{T}, LowerBounds::AbstractVector{T}) where T <: Float64
+	@inbounds x .= max.(x, LowerBounds)
+end
+
 function trust_region_LA(	fun,
 							grad,
 							hess,
@@ -76,16 +79,17 @@ function trust_region_LA(	fun,
 	grad_LA(x)	= grad(x) + la_grad(x, λ, lower_bounds, penalty)
 	hess_LA(x)	= hess(x) + la_hess(x, λ, lower_bounds, penalty)
 
-	init_sol = 20*ones(2)
+	init_sol = x
 	sol = copy(x)
 	λ 	= zeros(2)
-	la_update!(λ, penalty, x, lower_bounds)
+	la_update!(sol, λ, lower_bounds, penalty)
 	w1 	= 1 / (penalty^0.1)
 	w2 	= 1 / penalty;
 
-	for i in 1:1000
+	for i in 1:10
 
-		sol, delta = trust_region(fun_LA, grad_LA, hess_LA, delta, init_sol, verbose = 0)
+		# @inbounds sol .= max.(sol, lower_bounds)
+		sol, _ = trust_region(fun_LA, grad_LA, hess_LA, delta, sol, verbose = 0)
 
 		println("TR sol = ", sol, "  delta", delta)
 		# if verbose > 0
