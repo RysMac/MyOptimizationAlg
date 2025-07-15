@@ -1,10 +1,10 @@
 /*************************************************************
 * AceGen    8.202 Linux (7 Oct 24)                           *
-*           Co. J. Korelc  2020           24 Jan 25 00:20:31 *
+*           Co. J. Korelc  2020           31 May 25 00:09:21 *
 **************************************************************
 User     : Limited evaluation version
-Notebook : Subproblem
-Evaluation time                 : 2 s     Mode  : Optimal
+Notebook : CrystalPlasticity24SlipsPoint
+Evaluation time                 : 3 s     Mode  : Optimal
 Number of formulae              : 128     Method: Automatic
 Subroutine                      : SubproblemAceGenTest size: 867
 Total size of Mathematica  code : 867 subexpressions
@@ -131,6 +131,13 @@ void normalize(double vec[N]) {
 	double norm = vector_norm(vec);
 	for (int i = 0; i < N; i++) {
 		vec[i] /= norm;
+	}
+}
+
+// Function to scale a vector by a given factor
+void vscale(double *z, int n, double factor) {
+	for (int i = 0; i < n; i++) {
+		z[i] *= factor;
 	}
 }
 
@@ -455,6 +462,93 @@ double find_root(const T pl[N], const T eigvector[N], T delta, T initial_guess) 
 		x = x_new;
 	}
 	return x;
+}
+
+// Function to estimate the smallest singular value and corresponding vector
+double estsv(double **R, double *z, int n) {
+	double e, s, sm, temp, w, wm, ynorm, znorm;
+
+	// Initialize vector z to zero
+	for (int i = 0; i < n; i++) {
+		z[i] = 0.0;
+	}
+
+	// Set initial value of e based on R[0][0]
+	e = fabs(R[0][0]);
+	if (e == 0.0) {
+		z[0] = 1.0;
+		return 0.0;
+	}
+
+	// Solve R' * y = e
+	for (int i = 0; i < n; i++) {
+		e = copysign(e, -z[i]);
+
+		if (fabs(e - z[i]) > fabs(R[i][i])) {
+			temp = fmin(fabs(R[i][i] / (e - z[i])), SMALL);
+			vscale(z, n, temp);
+			e *= temp;
+		}
+
+		if (R[i][i] == 0.0) {
+			w = 1.0;
+			wm = 1.0;
+		} else {
+			w = (e - z[i]) / R[i][i];
+			wm = -(e + z[i]) / R[i][i];
+		}
+
+		s = fabs(e - z[i]);
+		sm = fabs(e + z[i]);
+
+		for (int j = i + 1; j < n; j++) {
+			sm += fabs(z[j] + wm * R[i][j]);
+		}
+
+		for (int j = i + 1; j < n; j++) {
+			temp = z[j] + w * R[i][j];
+			z[j] = temp;
+			s += fabs(temp);
+		}
+
+		if (s < sm) {
+			temp = wm - w;
+			w = wm;
+			if (temp != 0.0) {
+				for (int j = i + 1; j < n; j++) {
+					z[j] += temp * R[i][j];
+				}
+			}
+		}
+		z[i] = w;
+	}
+	ynorm = vector_norm(z);
+
+	// Solve R * z = y
+	for (int j = n - 1; j >= 0; j--) {
+		if (fabs(z[j]) > fabs(R[j][j])) {
+			temp = fmin(fabs(R[j][j] / z[j]), SMALL);
+			vscale(z, n, temp);
+			ynorm *= temp;
+		}
+
+		if (R[j][j] == 0.0) {
+			z[j] = 1.0;
+		} else {
+			z[j] /= R[j][j];
+		}
+
+		if ((temp = z[j]) != 0.0) {
+			for (int i = 0; i < j; i++) {
+				z[i] -= temp * R[i][j];
+			}
+		}
+	}
+
+	// Normalize z and return svmin
+	znorm = 1.0 / vector_norm(z);
+	vscale(z, n, znorm);
+	return ynorm * znorm;
 }
 
 

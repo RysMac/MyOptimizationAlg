@@ -68,54 +68,58 @@ end
 function trust_region_LA(	fun,
 							grad,
 							hess,
+							yield_func,
 							delta::T,
 							x::Vector{T},
 							penalty::T,
 							lower_bounds::Vector{T};
 							verbose = 0) where T <: Float64
 
-
 	fun_LA(x)	= fun(x) + la_lagrangian(x, λ, lower_bounds, penalty)
 	grad_LA(x)	= grad(x) + la_grad(x, λ, lower_bounds, penalty)
 	hess_LA(x)	= hess(x) + la_hess(x, λ, lower_bounds, penalty)
 
-	init_sol = x
+	init_sol = zeros(24)
 	sol = copy(x)
-	λ 	= zeros(2)
-	la_update!(sol, λ, lower_bounds, penalty)
+	λ 	= zeros(24)
+	# la_update!(sol, λ, lower_bounds, penalty)
 	w1 	= 1 / (penalty^0.1)
 	w2 	= 1 / penalty;
 
-	for i in 1:10
+	for i in 1:100
 
 		# @inbounds sol .= max.(sol, lower_bounds)
-		sol, _ = trust_region(fun_LA, grad_LA, hess_LA, delta, sol, verbose = 0)
+		active = [yield_func(sol)[i] > 0. ? 1 : 0 for i in 1:24]
+		# println("active slips = ", active)
 
-		println("TR sol = ", sol, "  delta", delta)
+		# println("grad before TR  = ", grad_LA(sol))
+		sol, _ = trust_region(fun_LA, grad_LA, hess_LA, delta, init_sol, active, verbose = 0)
+
+		# println("TR sol = ", sol, "  delta = ", delta)
 		# if verbose > 0
 		# 	println("trust region sol = ", sol)
 		# end
 
-		#if norm(constraints_violation(sol, lower_bounds)) > 1e-14
+		if norm(constraints_violation(sol, lower_bounds)) > 1e-16
 			# penalty = penalty
 			la_update!(sol, λ, lower_bounds, penalty)
 			# if verbose > 0
 			# end
-			w1 = w1 / (penalty^0.8)
+			w1 = w1 / (penalty^0.4)
 			w2 = w2 / penalty
 		#end
-		# else
-		# 	penalty = penalty * 2
-		# 	# if verbose > 0
-		# 	# 	println("penalty updated = ", penalty)
-		# 	# end
-		# 	w1 = 1 / (penalty^0.1)
-		# 	w2 = 1 / penalty
+		else
+			penalty = penalty * 2
+			# if verbose > 0
+			# 	println("penalty updated = ", penalty)
+			# end
+			w1 = 1 / (penalty^0.1)
+			w2 = 1 / penalty
 
-		# end
+		end
 
-		println("Gradient after TR = ", norm(grad_LA(sol)))
-		if norm(grad_LA(sol)) < 10^-12
+		# println("Gradient after TR = ", norm(grad_LA(sol)))
+		if norm((-grad(sol))' * sol) < 10^-14
 			println("Finish Gradient = ", norm(grad_LA(sol)), "  at $i iterations")
 			return sol
 		end

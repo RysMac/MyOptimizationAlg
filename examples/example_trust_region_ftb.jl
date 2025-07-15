@@ -1,6 +1,6 @@
 # Include the Trust Region algorithm
 
-include("../src/algorithms/trust_region.jl")
+include("../src/algorithms/trust_region_frac_to_boundary.jl")
 include("../src/algorithms/cauchy_point.jl")
 
 using BenchmarkTools
@@ -28,17 +28,17 @@ function hessian_rosenbrock(x::Vector{T}) where T
 end
 
 # Initial guess
-x0 = [1.5, 1.5]  # Close to the global minimum but not at it
+x0 = [10.9, 10.8]  # Close to the global minimum but not at it
 
 # Trust region radius
-delta = .01
+delta = 1.
 
 # x0 = cauchy_point(delta, gradient_rosenbrock(x0), hessian_rosenbrock(x0))
 
 gradient_rosenbrock(x0)
 
 # Run the trust-region algorithm
-solution = trust_region(rosenbrock, gradient_rosenbrock, hessian_rosenbrock, delta, x0, [0,0], verbose = 1)
+solution = trust_region_ftb(rosenbrock, gradient_rosenbrock, hessian_rosenbrock, delta, x0)
 
 # Print the solution
 println("Optimized solution: $solution")

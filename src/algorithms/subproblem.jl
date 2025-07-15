@@ -1,7 +1,7 @@
 using LinearAlgebra
 using Roots
 
-function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T = 1e-4, max_iters::Int = 100, verbose::Int = 0) where T <: Float64
+function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T = 1e-1, max_iters::Int = 100, verbose::Int = 0) where T <: Float64
 
 	n 					= length(grad)
 	sol 				= zeros(T, n)
@@ -11,12 +11,11 @@ function subproblem(hess::AbstractMatrix{T}, grad::Vector{T}, delta::T; tol::T =
 	if !LinearAlgebra.isposdef(hess)
 		eigen_sys = eigen(hess)
 		eigen_val_min = minimum(real(eigen_sys.values))
-		lambda = abs(eigen_val_min) + 0.00001
+		lambda = abs(eigen_val_min) + 0.0001
 		if verbose > 1
 			println("not positive definite: eigenvalue min = ", eigen_val_min)
 		end
 	end
-
 	for i in 1:max_iters
 
 		# Regularize Hessian if needed
